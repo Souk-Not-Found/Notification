@@ -1,22 +1,27 @@
 package com.example.eventmanagement.services;
 
-import com.example.eventmanagement.entities.Notification;
+import com.example.eventmanagement.entities.Message;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class NotificationService {
-    public void sendNotification(Notification notification) {
-        // Logic to send notification (e.g., WebSocket, Email, SMS)
+    private SimpMessagingTemplate template;
+
+    public NotificationService ( SimpMessagingTemplate template){
+        this.template = template;
     }
 
-    public List<Notification> getNotificationsForUser(String userId) {
-        // Retrieve notifications for a specific user
-        return null;
+    public void sendPublicNoti(){
+
+       /* Message message  = new Message("Public Notification");
+        template.convertAndSend("/topic/public-noti", message);*/
     }
 
-    public void markAsRead(Long notificationId) {
-        // Mark a notification as read
+    public void sendPrivateNoti(final String id){
+       /* Message message  = new Message("Private Notification");
+        template.convertAndSendToUser(id, "/topic/private-noti", message);*/
     }
 }

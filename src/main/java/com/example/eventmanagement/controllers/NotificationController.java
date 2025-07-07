@@ -1,25 +1,38 @@
 package com.example.eventmanagement.controllers;
 
-import com.example.eventmanagement.entities.Notification;
+import com.example.eventmanagement.entities.Message;
 import com.example.eventmanagement.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.annotation.SendToUser;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.util.HtmlUtils;
 
-import java.util.List;
+import java.security.Principal;
 
-@RestController
-@RequestMapping("/api/notifications")
+    // this is a controller
+@Controller
 public class NotificationController {
     @Autowired
-    private NotificationService notificationService;
+    NotificationService notiService;
 
-    @GetMapping("/{userId}")
-    public List<Notification> getUserNotifications(@PathVariable String userId) {
-        return notificationService.getNotificationsForUser(userId);
-    }
+   /* @MessageMapping("/message")
+    @SendTo("/topic/messages")
+    public Message getMessage(final Message message){
+        message.setMessageContent(HtmlUtils.htmlEscape(message.getMessageContent()));
+        System.out.println("!!! Message from BACKEND " + message.getMessageContent());
+        notiService.sendPublicNoti();
+        return message;
+    }*/
 
-    @PostMapping("/")
-    public void sendNotification(@RequestBody Notification notification) {
-        notificationService.sendNotification(notification);
-    }
+   /* @MessageMapping("/private-message")
+    @SendToUser("/topic/private-messages")
+    public Message getPrivateMessage(final Message message, final Principal principal){
+        message.setMessageContent(HtmlUtils.htmlEscape(principal.getName() +" %% "+message.getMessageContent()));
+        System.out.println("!!! Private Message from BACKEND " + message.getMessageContent());
+        notiService.sendPrivateNoti(principal.getName());
+        return message;
+    }*/
+
 }
