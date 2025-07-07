@@ -4,6 +4,7 @@ import com.example.eventmanagement.entities.EventSelection;
 import com.example.eventmanagement.entities.Message;
 import com.example.eventmanagement.repositories.EventSelectionRepository;
 import com.example.eventmanagement.dto.SelectionStatistics;
+import com.example.eventmanagement.services.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,9 @@ public class EventSelectionService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private EventService eventService;
+
     /**
      * Create a new event selection and handle notifications
      */
@@ -36,12 +40,18 @@ public class EventSelectionService {
             throw new IllegalArgumentException("Start date cannot be after end date");
         }
 
+        // Validate that the event exists and is active
+        eventService.validateEventForSelection(eventId);
+        
+        // Get the actual event name from the database (in case it was changed)
+        String actualEventName = eventService.getEventNameById(eventId);
+
         // Check for overlapping selections
         List<EventSelection> overlappingSelections = eventSelectionRepository
                 .findOverlappingSelections(eventId, startDate, endDate);
 
-        // Create the new selection
-        EventSelection newSelection = new EventSelection(userId, userName, eventId, eventName, startDate, endDate);
+        // Create the new selection with the actual event name
+        EventSelection newSelection = new EventSelection(userId, userName, eventId, actualEventName, startDate, endDate);
         
         // Set status based on overlaps
         if (!overlappingSelections.isEmpty()) {
