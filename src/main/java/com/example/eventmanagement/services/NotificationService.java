@@ -24,16 +24,16 @@ public class NotificationService {
         this.template = template;
     }
 
-    public void sendPublicNoti(String content) {
+    public Notification sendPublicNoti(String content) {
         // Create and save notification to database
         Notification notification = new Notification(content, Notification.NotificationType.PUBLIC);
         notification = notificationRepository.save(notification);
         
-        // Send via WebSocket
-        Message message = new Message(content);
-        template.convertAndSend("/topic/public-noti", message);
+        // Send via WebSocket - send just the message content
+        template.convertAndSend("/topic/public-noti", content);
         
         System.out.println("Public notification saved with ID: " + notification.getId());
+        return notification;
     }
 
     public void sendPrivateNoti(String id, String content) {
@@ -41,9 +41,8 @@ public class NotificationService {
         Notification notification = new Notification(content, Notification.NotificationType.PRIVATE, id);
         notification = notificationRepository.save(notification);
         
-        // Send via WebSocket
-        Message message = new Message(content);
-        template.convertAndSendToUser(id, "/topic/private-noti", message);
+        // Send via WebSocket - send just the message content
+        template.convertAndSendToUser(id, "/topic/private-noti", content);
         
         System.out.println("Private notification saved with ID: " + notification.getId());
     }
@@ -53,9 +52,8 @@ public class NotificationService {
         Notification notification = new Notification(content, type);
         notification = notificationRepository.save(notification);
         
-        // Send via WebSocket
-        Message message = new Message(content);
-        template.convertAndSend("/topic/public-noti", message);
+        // Send via WebSocket - send just the message content
+        template.convertAndSend("/topic/public-noti", content);
         
         System.out.println("Event notification saved with ID: " + notification.getId());
     }

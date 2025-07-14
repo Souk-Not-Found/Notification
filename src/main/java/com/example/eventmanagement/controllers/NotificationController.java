@@ -108,8 +108,8 @@ public class NotificationController {
     
     // Send a test notification
     @PostMapping("/send-test")
-    public ResponseEntity<String> sendTestNotification(@RequestParam String message) {
-        notificationService.sendPublicNoti(message);
-        return ResponseEntity.ok("Test notification sent and saved to database");
+    public ResponseEntity<Notification> sendTestNotification(@RequestBody String message) {
+        Notification notification = notificationService.sendPublicNoti(message);
+        return ResponseEntity.ok(notification);
     }
 }
