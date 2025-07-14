@@ -20,7 +20,7 @@ public class PostToMessageBoardController {
 
         System.out.println("Service message sent : " + message.getMessageContent());
         service.postToMessageBoard(message.getMessageContent());
-        notiService.sendPublicNoti();
+        notiService.sendPublicNoti(message.getMessageContent());
     }
 
 
@@ -31,6 +31,6 @@ public class PostToMessageBoardController {
 
         System.out.println("Service message sent : " + message.getMessageContent());
         service.postPrivateToMessageBoard(id, message.getMessageContent());
-        notiService.sendPrivateNoti(id);
+        notiService.sendPrivateNoti(id, message.getMessageContent());
     }
 }

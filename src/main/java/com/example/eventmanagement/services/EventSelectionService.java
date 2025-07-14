@@ -4,7 +4,6 @@ import com.example.eventmanagement.entities.EventSelection;
 import com.example.eventmanagement.entities.Message;
 import com.example.eventmanagement.repositories.EventSelectionRepository;
 import com.example.eventmanagement.dto.SelectionStatistics;
-import com.example.eventmanagement.services.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -25,8 +24,6 @@ public class EventSelectionService {
     @Autowired
     private NotificationService notificationService;
 
-    @Autowired
-    private EventService eventService;
 
     /**
      * Create a new event selection and handle notifications
@@ -41,10 +38,9 @@ public class EventSelectionService {
         }
 
         // Validate that the event exists and is active
-        eventService.validateEventForSelection(eventId);
-        
-        // Get the actual event name from the database (in case it was changed)
-        String actualEventName = eventService.getEventNameById(eventId);
+        // REMOVED: eventService.validateEventForSelection(eventId);
+        // REMOVED: String actualEventName = eventService.getEventNameById(eventId);
+        String actualEventName = eventName; // Use provided eventName directly
 
         // Check for overlapping selections
         List<EventSelection> overlappingSelections = eventSelectionRepository
@@ -117,9 +113,7 @@ public class EventSelectionService {
         selection.setStatus(EventSelection.SelectionStatus.CANCELLED);
         eventSelectionRepository.save(selection);
 
-        // Notify admin about cancellation
-        notifyAdmin("Event selection cancelled: " + selection.getUserName() + 
-                   " cancelled selection for event " + selection.getEventName());
+        // Removed: Notify admin about cancellation
     }
 
     /**
@@ -195,19 +189,6 @@ public class EventSelectionService {
      */
     private void handleNotifications(EventSelection newSelection, List<EventSelection> overlappingSelections) {
         
-        // Notify admin about new selection
-        String adminMessage = String.format("New event selection: %s selected event '%s' for period %s to %s", 
-                                          newSelection.getUserName(), 
-                                          newSelection.getEventName(),
-                                          newSelection.getStartDate().toString(),
-                                          newSelection.getEndDate().toString());
-        
-        if (!overlappingSelections.isEmpty()) {
-            adminMessage += " (CONFLICT DETECTED with " + overlappingSelections.size() + " existing selections)";
-        }
-        
-        notifyAdmin(adminMessage);
-
         // Notify users with overlapping selections
         for (EventSelection overlapping : overlappingSelections) {
             String conflictMessage = String.format("CONFLICT: Another user has selected event '%s' for an overlapping period (%s to %s). " +
@@ -236,15 +217,6 @@ public class EventSelectionService {
         Message notification = new Message(message);
         messagingTemplate.convertAndSendToUser(userId, "/topic/private-notifications", notification);
         System.out.println("Notification sent to user " + userId + ": " + message);
-    }
-
-    /**
-     * Send notification to admin
-     */
-    private void notifyAdmin(String message) {
-        Message notification = new Message(message);
-        messagingTemplate.convertAndSend("/topic/admin-notifications", notification);
-        System.out.println("Admin notification: " + message);
     }
 
     /**
