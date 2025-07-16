@@ -11,7 +11,9 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.HtmlUtils;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -25,8 +27,7 @@ public class NotificationController {
     @Autowired
     NotificationService notificationService;
 
-    // WebSocket endpoints (commented out as before)
-    /*
+    // WebSocket endpoints
     @MessageMapping("/message")
     @SendTo("/topic/messages")
     public Message getMessage(final Message message){
@@ -44,7 +45,6 @@ public class NotificationController {
         notificationService.sendPrivateNoti(principal.getName(), "Private Notification");
         return message;
     }
-    */
 
     // REST endpoints for notification management
     
@@ -111,5 +111,26 @@ public class NotificationController {
     public ResponseEntity<Notification> sendTestNotification(@RequestBody String message) {
         Notification notification = notificationService.sendPublicNoti(message);
         return ResponseEntity.ok(notification);
+    }
+    
+    // Send a test notification with event ID
+    @PostMapping("/send-test-event")
+    public ResponseEntity<Notification> sendTestEventNotification(@RequestBody TestEventNotificationRequest request) {
+        String notificationMessage = String.format("New event created: %s (ID: %d)", request.eventName, request.eventId);
+        Notification notification = notificationService.sendEventNotification(notificationMessage, Notification.NotificationType.EVENT_CREATED);
+        return ResponseEntity.ok(notification);
+    }
+    
+    // Request DTO for test event notification
+    public static class TestEventNotificationRequest {
+        private String eventName;
+        private Long eventId;
+        
+        // Getters and Setters
+        public String getEventName() { return eventName; }
+        public void setEventName(String eventName) { this.eventName = eventName; }
+        
+        public Long getEventId() { return eventId; }
+        public void setEventId(Long eventId) { this.eventId = eventId; }
     }
 }

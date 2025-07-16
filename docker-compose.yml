@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: eventmanagement-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: EventManagement
+      MYSQL_USER: eventuser
+      MYSQL_PASSWORD: eventpass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - eventmanagement-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Spring Boot Application
+  app:
+    build: .
+    container_name: eventmanagement-app
+    ports:
+      - "8100:8099"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/EventManagement?createDatabaseIfNotExist=true&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: eventuser
+      SPRING_DATASOURCE_PASSWORD: eventpass
+      SERVER_PORT: 8099
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - eventmanagement-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8099/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Optional: Redis for caching (if needed later)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: eventmanagement-redis
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - eventmanagement-network
+
+volumes:
+  mysql_data:
+
+networks:
+  eventmanagement-network:
+    driver: bridge 

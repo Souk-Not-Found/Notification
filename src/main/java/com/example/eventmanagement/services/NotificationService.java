@@ -48,7 +48,7 @@ public class NotificationService {
     }
     
     // Send event-specific notification
-    public void sendEventNotification(String content, Notification.NotificationType type) {
+    public Notification sendEventNotification(String content, Notification.NotificationType type) {
         Notification notification = new Notification(content, type);
         notification = notificationRepository.save(notification);
         
@@ -56,6 +56,7 @@ public class NotificationService {
         template.convertAndSend("/topic/public-noti", content);
         
         System.out.println("Event notification saved with ID: " + notification.getId());
+        return notification;
     }
     
     // Get all notifications
